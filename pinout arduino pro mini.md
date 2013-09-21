@@ -1,0 +1,16 @@
+
+
+PIN 0 XBEE
+PIN 1 XBEE
+
+
+PIN 2
+PIN 3
+PIN 4
+
+
+
+PIN 7
+PIN 8
+PIN 9
+
