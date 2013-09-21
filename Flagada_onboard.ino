@@ -1,36 +1,36 @@
 /*
 written september 2013
-
-This sketch is meant to run onboard Flagada,
-on a 3.3V Arduino Pro Mini,
-using an XBEE on channel 1911 BAUD 19200
-
--Values from the remote are being read and trimming values are stored in EPROM
-
-+++JOYSTICK BUTTONS+++
-IF both switches are in up position then
-Right pot = throttle, trigger is deadmanswitch
-Joystick Y controls rotorpitch
-Joystick X controls difference in rotorpitch
-Slider controls rotortilt
-
-IF left switch is down
-then left and right pots set min and max values for left pitchservo
-The values are applied when you hit fire
-
-IF right switch is down
-then left and right pots set min and max values for right pitchservo
-The values are applied when you hit fire
-
-
-IF both switches are down
-then left and right pots controil the offset for left and right rotortilt
-The values are applied when you hit fire
-
-+++++++++++++++++++++++++
-
-
-*/
+ 
+ This sketch is meant to run onboard Flagada,
+ on a 3.3V Arduino Pro Mini,
+ using an XBEE on channel 1911 BAUD 19200
+ 
+ -Values from the remote are being read and trimming values are stored in EPROM
+ 
+ +++JOYSTICK BUTTONS+++
+ IF both switches are in up position then
+ Right pot = throttle, trigger is deadmanswitch
+ Joystick Y controls rotorpitch
+ Joystick X controls difference in rotorpitch
+ Slider controls rotortilt
+ 
+ IF left switch is down
+ then left and right pots set min and max values for left pitchservo
+ The values are applied when you hit fire
+ 
+ IF right switch is down
+ then left and right pots set min and max values for right pitchservo
+ The values are applied when you hit fire
+ 
+ 
+ IF both switches are down
+ then left and right pots controil the offset for left and right rotortilt
+ The values are applied when you hit fire
+ 
+ +++++++++++++++++++++++++
+ 
+ 
+ */
 
 #include <ValueSync.h> //library written by Maximillian Ernestus to synchronise values between diffeerent arduino's
 #include <EEPROM.h>
@@ -60,13 +60,18 @@ int maxLeftPitch = 170, minLeftPitch = 50;
 
 int motorAngleOffsetRight = 0, motorAngleOffsetLeft = 0;
 
-
-
+//Piezo speaker on pin 5
+//Use of the tone() function will interfere with PWM output on pins 3 and 11 (on boards other than the Mega).
+int speakerpin=5;
+long speakertimer=0;
+long speakerprevtimer=0;
 
 
 void setup()
 {
+
   pinMode(13, OUTPUT);
+  pinMode(5, OUTPUT);
   Serial.begin(19200);
   //Wire.begin();
   pitch_l.attach(2);
@@ -154,6 +159,8 @@ void loop()
     }
     else //Trim mode
     {
+      speakeralarm(); //adds beeping when in config mode
+      
       while(!(c_switch_r && c_switch_l))
       {
         readSomeValues();
@@ -235,3 +242,14 @@ void readSomeValues()
     receiver.receiveValue();
   }
 }
+
+void speakeralarm(){
+  
+  if (millis()>speakertimer+2000){
+  tone(speakerpin, 250, 100);
+  delay(100);
+  tone(speakerpin, 500, 300);
+  speakertimer=millis();
+  }
+}
+
