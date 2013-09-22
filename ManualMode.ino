@@ -1,12 +1,10 @@
 
 void startManual()
 {
-    Serial.println("calibration");
 }
 
 void manualControl()
 {
-      Serial.println("calibration");
   transferJoystickToPitches();
   setRPM(c_pot_r);
   setTilt(map(c_slider, 0, 1024, -90, 90)); 
@@ -24,7 +22,6 @@ void transferControlToPitches(int controlX, int controlY)
 
 void transferJoystickToPitches()
 {
-      Serial.println("calibration");
   transferControlToPitches(c_joy_x, c_joy_y);
 }
 

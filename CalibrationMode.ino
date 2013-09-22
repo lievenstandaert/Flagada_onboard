@@ -7,12 +7,10 @@ int motorAngleOffsetRight = 0, motorAngleOffsetLeft = 0;
 void startCalibration()
 {
   setRPM(0);
-  Serial.println("startCalibration");
 }
 
 void calibration()
 {
-  Serial.println("calibration");
   transferJoystickToPitches();
   setTilt(c_slider);
 
@@ -39,7 +37,6 @@ void calibration()
 void stopCalibration()
 {
   storeCalibration();
-  Serial.println("stopCalibration");
 }
 
 

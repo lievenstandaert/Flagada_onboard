@@ -83,13 +83,10 @@ void setup()
 
   pinMode(13, OUTPUT);
   pinMode(5, OUTPUT);
-  tone(5,200,250);
-  delay(500);
-  tone(5,400,500);
-  delay(500);
 
-  Wire.begin(); //initialising I2C
+
   Serial.begin(19200);
+  Wire.begin(); //initialising I2C
 
 
   compass.wakeUp();
@@ -109,13 +106,17 @@ void setup()
   receiver.addValue(&c_switch_l);
   receiver.addValue(&c_switch_r);
 
-
-  sender.addValue(&currentMode);
-  sender.addValue(&c_switch_l);
-  sender.addValue(&c_switch_r);
-  sender.addValue(&rpm2);
   sender.addValue(&compass2);
   sender.addValue(&altitude2);
+  
+  /*
+  sender.addValue(&currentMode);
+   sender.addValue(&c_switch_l);
+   sender.addValue(&c_switch_r);
+   sender.addValue(&rpm2);
+   sender.addValue(&compass2);
+   sender.addValue(&altitude2);
+   */
 
   hardwareSetup();
 
@@ -125,7 +126,8 @@ void setup()
 
 
 void loop()
-{Serial.print("test");
+{
+
   readSomeValues();  //this synchs values zith other arduino
   compass2=compass.getHeading();
   readSonar();
@@ -156,7 +158,7 @@ void loop()
 
 
   sender.syncValues();
-  if(sender.timeSinceLastMessage() > 1000)
+  if(sender.timeSinceLastMessage() > 100)
   {
     sender.sendAllValues();
     Serial.println();
@@ -223,6 +225,8 @@ void speakeralarm(){
     speakertimer=millis();
   }
 }
+
+
 
 
 
