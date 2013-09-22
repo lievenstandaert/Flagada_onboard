@@ -3,7 +3,7 @@ written september 2013
  
  This sketch is meant to run onboard Flagada,
  on a 3.3V Arduino Pro Mini,
- using an XBEE on channel 1911 BAUD 19200
+ using an XBEE on channel 1911 BAUD 19200 DL 0xFFFF (broadcast mode) MY (adress) 42
  
  -Values from the remote are being read and trimming values are stored in EPROM
  
@@ -32,14 +32,15 @@ written september 2013
  
  */
 
-#include <ValueSync.h> //library written by Maximillian Ernestus to synchronise values between diffeerent arduino's
+#include <ValueSync.h> //library written by Maximillian Ernestus to synchronise values between different arduino's
 #include <EEPROM.h>
 #include <Servo.h>
 
 Servo pitch_l, rpm_l, angle_l; //servo definitions
 Servo pitch_r, rpm_r, angle_r;
 
-ValueReceiver<9> receiver;  //number of values to be synched
+ValueReceiver<9> receiver;  //number of values to be synched with joystick
+ValueSender<4> sender;  //number of values to be synched with datamonitor
 
 //Here we sotre the current values
 int c_joy_x = 512;
@@ -52,8 +53,8 @@ int c_slider = 512;
 int c_pot_l = 512;
 int c_pot_r = 0;
 
-int c_switch_l;
-int c_switch_r;
+int c_switch_l=1;
+int c_switch_r=1;
 
 int maxRightPitch = 156, minRightPitch = 50;
 int maxLeftPitch = 170, minLeftPitch = 50;
@@ -65,6 +66,8 @@ int motorAngleOffsetRight = 0, motorAngleOffsetLeft = 0;
 int speakerpin=5;
 long speakertimer=0;
 long speakerprevtimer=0;
+
+int rpm2=0;
 
 
 void setup()
@@ -96,6 +99,12 @@ void setup()
   receiver.addValue(&c_switch_l);
   receiver.addValue(&c_switch_r);
 
+
+  sender.addValue(&rpm2);
+  sender.addValue(&rpm2);
+  sender.addValue(&rpm2);
+  sender.addValue(&rpm2);
+  
   rpm_l.write(90);
   rpm_r.write(90);
 
@@ -113,11 +122,18 @@ int pitch_angle_l;
 int pitch_angle_r;
 
 void loop()
-{
+{//Serial.print("test");
   readSomeValues();  //this synchs values zith other arduino
+
+ if(sender.timeSinceLastMessage() > 1000){
+sender.sendAllValues();
+Serial.println();
+ 
+ }
 
   //c_heading = compass.getHeading();
   int rpm = map(c_pot_r, 0, 1024, 89, 140);
+  
   if(!c_joy_fire_index)
     rpm = 89; //deadmanswitch
 
@@ -201,7 +217,7 @@ void loop()
       EEPROM.write(5, motorAngleOffsetLeft);
     }
   }
-
+rpm2=rpm;
   delay(10);
 
 }
@@ -251,3 +267,10 @@ void speakeralarm(){
   }
 }
 
+
+void datatransmit(){
+  
+  
+  
+  
+}
