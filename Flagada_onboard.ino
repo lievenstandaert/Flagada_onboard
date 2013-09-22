@@ -88,6 +88,12 @@ int altitude2=0;
 int automode=0;
 int compassheading;
 
+long currenttime=0;
+long prevtime=0;
+int  prevheading=0;
+int rotationrate=0;
+
+
 //-----------------------------------------------
 
 void setup()
@@ -141,6 +147,7 @@ void loop()
   compass2=compass.getHeading();
   readSonar();
 engageAutopilot();
+calcRateofRotation();
 
   int newMode = MANUAL_MODE;
 
@@ -172,7 +179,7 @@ engageAutopilot();
 
 
   //sender.syncValues();
-  if(sender.timeSinceLastMessage() > 1000)
+  if(sender.timeSinceLastMessage() > 100)
   {
     sender.sendAllValues();
     Serial.println();
