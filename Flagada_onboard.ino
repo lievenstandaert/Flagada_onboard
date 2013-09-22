@@ -43,7 +43,7 @@ HMC6352 compass;
 
 //------------------COMMUNICATION-------------------------
 ValueReceiver<9> receiver;  //number of values to be synched with joystick
-ValueSender<6> sender;  //number of values to be synched with datamonitor
+ValueSender<5> sender;  //number of values to be synched with datamonitor
 //------------------COMMUNICATION-------------------------
 
 
@@ -53,18 +53,23 @@ int c_joy_y = 512;
 
 int c_joy_fire_index;
 int c_joy_fire_thumb;
-int c_slider = 512; 
+
+int c_prev_joy_fire_thumb;
 
 int c_pot_l = 512;
 int c_pot_r = 0;
 
+int c_slider=512;
 int c_switch_l=1;
 int c_switch_r=1;
+
 //------------------REMOTE_CONTROL------------------------
 
 
 #define MANUAL_MODE 0
 #define CALIBRATION_MODE 1
+#define AUTO_MODE 2
+
 
 int currentMode = MANUAL_MODE;
 
@@ -78,15 +83,25 @@ int rpm2=0;
 int compass2=0;
 int altitude2=0;
 
+
+//----------------AUTOPILOT------------------
+int automode=0;
+int compassheading;
+
+//-----------------------------------------------
+
 void setup()
 {
 
   pinMode(13, OUTPUT);
   pinMode(5, OUTPUT);
+  tone(5,200,250);
+  delay(500);
+  tone(5,400,500);
+  delay(500);
 
-
-  Serial.begin(19200);
   Wire.begin(); //initialising I2C
+  Serial.begin(19200);
 
 
   compass.wakeUp();
@@ -106,19 +121,14 @@ void setup()
   receiver.addValue(&c_switch_l);
   receiver.addValue(&c_switch_r);
 
-  sender.addValue(&compass2);
-  sender.addValue(&altitude2);
-  
-  /*
-  sender.addValue(&currentMode);
-   sender.addValue(&c_switch_l);
-   sender.addValue(&c_switch_r);
-   sender.addValue(&rpm2);
-   sender.addValue(&compass2);
-   sender.addValue(&altitude2);
-   */
 
-  hardwareSetup();
+  sender.addValue(&currentMode);
+  sender.addValue(&rpm2);
+  sender.addValue(&compass2);
+  sender.addValue(&compassheading);
+  sender.addValue(&altitude2);
+
+  hardwareSetup(); //attaches servos
 
   loadCalibration();
 }
@@ -126,12 +136,11 @@ void setup()
 
 
 void loop()
-{
-
+{//Serial.print("test");
   readSomeValues();  //this synchs values zith other arduino
   compass2=compass.getHeading();
   readSonar();
-
+engageAutopilot();
 
   int newMode = MANUAL_MODE;
 
@@ -141,6 +150,11 @@ void loop()
 
   else{
     newMode = MANUAL_MODE;
+  }
+  
+  if(automode==1){
+        newMode = AUTO_MODE;
+    
   }
   if(newMode != currentMode)
   {
@@ -157,8 +171,8 @@ void loop()
   applyTilt();
 
 
-  sender.syncValues();
-  if(sender.timeSinceLastMessage() > 100)
+  //sender.syncValues();
+  if(sender.timeSinceLastMessage() > 1000)
   {
     sender.sendAllValues();
     Serial.println();
@@ -204,6 +218,9 @@ void runMode(int mode)
   case CALIBRATION_MODE:
     calibration();
     break;
+     case AUTO_MODE:
+    autoControl();
+    break;
   }
 }
 
@@ -225,8 +242,6 @@ void speakeralarm(){
     speakertimer=millis();
   }
 }
-
-
 
 
 
