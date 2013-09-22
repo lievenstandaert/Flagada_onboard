@@ -120,7 +120,6 @@ void loop()
     rpm = 89; //transmitter failsafe
 
   //d_heading = c_heading;
-
   if(false) //Auto Pilot
   {
     /*
@@ -136,6 +135,7 @@ void loop()
      rpm_l.write(rpm);
      rpm_r.write(rpm);
      */
+     
 
   }
   else //Manual Control
@@ -196,18 +196,15 @@ void loop()
   }
 
   delay(10);
+
 }
 
 void computePitches(int controlX, int controlY)
 {
-  int differential = map(controlX, 0, 1024, -45, 45);
+  int differential = map(controlX, 0, 1024, -15, 15);
   int pitch = map(controlY, 0, 1024, -45, 45);
-
-  if (controlY>512){
-  }
-  else{
-    differential =-differential;
-  }
+  
+  differential *= -1;
 
   pitch_angle_l = constrain(pitch + differential, -45, 45);
   pitch_angle_r = constrain(pitch - differential, -45, 45);
@@ -230,6 +227,7 @@ void applyMotorAngle()
 
 void readSomeValues()
 {
+  int valuesRead = 0;
   while(Serial.available() > 3)
   {
     receiver.receiveValue();
