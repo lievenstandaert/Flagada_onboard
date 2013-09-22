@@ -84,18 +84,18 @@ void setup()
   pinMode(13, OUTPUT);
   pinMode(5, OUTPUT);
   tone(5,200,250);
-delay(500);
+  delay(500);
   tone(5,400,500);
-delay(500);
+  delay(500);
 
-Wire.begin(); //initialising I2C
+  Wire.begin(); //initialising I2C
   Serial.begin(19200);
 
 
   compass.wakeUp();
- 
+
   //compass.sleep();
-  
+
   receiver.addValue(&c_joy_x); //adds this variable to the synchronisation system
   receiver.addValue(&c_joy_y); //the & means you pass the adress to the variable, not the value of the variable
 
@@ -113,9 +113,9 @@ Wire.begin(); //initialising I2C
   sender.addValue(&currentMode);
   sender.addValue(&c_switch_l);
   sender.addValue(&c_switch_r);
-sender.addValue(&rpm2);
-sender.addValue(&compass2);
-sender.addValue(&altitude2);
+  sender.addValue(&rpm2);
+  sender.addValue(&compass2);
+  sender.addValue(&altitude2);
 
   hardwareSetup();
 
@@ -125,18 +125,21 @@ sender.addValue(&altitude2);
 
 
 void loop()
-{
+{Serial.print("test");
   readSomeValues();  //this synchs values zith other arduino
   compass2=compass.getHeading();
   readSonar();
-  
+
 
   int newMode = MANUAL_MODE;
 
-  if(!c_switch_l || !c_switch_r)
+  if(!c_switch_l || !c_switch_r){
     newMode = CALIBRATION_MODE;
+  }
 
-
+  else{
+    newMode = MANUAL_MODE;
+  }
   if(newMode != currentMode)
   {
     stopMode(currentMode);
@@ -146,19 +149,19 @@ void loop()
   currentMode = newMode;
 
   runMode(currentMode);
-  
+
   applyRPM();
   applyPitch();
   applyTilt();
 
-/*
+
   sender.syncValues();
   if(sender.timeSinceLastMessage() > 1000)
   {
     sender.sendAllValues();
     Serial.println();
   }
-  */
+
 
   delay(10);
 }
@@ -220,6 +223,7 @@ void speakeralarm(){
     speakertimer=millis();
   }
 }
+
 
 
 
