@@ -30,12 +30,26 @@ written september 2013
  +++++++++++++++++++++++++
  
  
+ [(5.0V/512) = 0.009766V per inch = 9.766mV per inch]
+
+Calculating the Range
+Once you know the voltage scaling it is easy to properly calculate the range.
+
+The range formula is:
+[(Vm/Vi) = Ri]
+Vm = Measured Voltage
+Vi = Volts per Inch (Scalin
+ altitude2=(5.5/0.0098)*2.54*altitude2;
+ 
  */
 
 #include <ValueSync.h> //library written by Maximillian Ernestus to synchronise values between different arduino's
 #include <EEPROM.h>
 #include <Servo.h>
 
+#include <Wire.h>
+#include <HMC6352.h> //library for compass sensor
+HMC6352 compass; 
 Servo pitch_l, rpm_l, angle_l; //servo definitions
 Servo pitch_r, rpm_r, angle_r;
 
@@ -68,15 +82,23 @@ long speakertimer=0;
 long speakerprevtimer=0;
 
 int rpm2=0;
-
+int compass2=0;
+int altitude2=0;
 
 void setup()
 {
 
   pinMode(13, OUTPUT);
   pinMode(5, OUTPUT);
+    Wire.begin(); //initialising I2C
   Serial.begin(19200);
   //Wire.begin();
+  
+  compass.wakeUp();
+ 
+  //compass.sleep();
+  
+  
   pitch_l.attach(2);
   rpm_l.attach(4);
   angle_l.attach(3);
@@ -101,8 +123,8 @@ void setup()
 
 
   sender.addValue(&rpm2);
-  sender.addValue(&rpm2);
-  sender.addValue(&rpm2);
+  sender.addValue(&compass2);
+  sender.addValue(&altitude2);
   sender.addValue(&rpm2);
   
   rpm_l.write(90);
@@ -124,7 +146,8 @@ int pitch_angle_r;
 void loop()
 {//Serial.print("test");
   readSomeValues();  //this synchs values zith other arduino
-
+ compass2=compass.getHeading();
+  readSonar();
  if(sender.timeSinceLastMessage() > 1000){
 sender.sendAllValues();
 Serial.println();
@@ -272,5 +295,11 @@ void datatransmit(){
   
   
   
+  
+}
+void readSonar(){
+  altitude2=analogRead(0);
+  altitude2=(5.5/0.0098)*2.54*altitude2; //altitude in cm
+
   
 }
